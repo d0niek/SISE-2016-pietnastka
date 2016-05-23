@@ -4,6 +4,7 @@
 #include <ctime>
 #include <queue>
 #include <map>
+#include <cstring>
 using namespace std;
 
 #define PB(x) push_back(x)
@@ -26,12 +27,18 @@ ostream &operator<<(ostream &os, const Fifteen &f)
     return os;
 }
 
+bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char* option);
 bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 bool dfsR(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc < 2) {
+        cout << "Brakuje parametrów\n";
+        return 0;
+    }
+
     srand(time(NULL));
 
     Fifteen fifteen;
@@ -48,9 +55,7 @@ int main()
     map<__uint64_t, Fifteen> visited;
     visited[f.stan] = fifteen;
 
-//    if (!bfs(f, visited)) {
-//    if (!dfsR(f, visited)) {
-    if (!dfsI(f, visited)) {
+    if (!resolv(f, visited, argv[1])) {
         cout << "Fail\n";
         return 0;
     }
@@ -68,6 +73,21 @@ int main()
     cout << f << "\n";
 
     return 0;
+}
+
+bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char* option)
+{
+    bool result = false;
+
+    if (strcmp(option, "-b") == 0 || strcmp(option, "--bfs") == 0) {
+        result = bfs(fifteen, visited);
+    } else if (strcmp(option, "-d") == 0 || strcmp(option, "--dfs") == 0) {
+        result = dfsR(fifteen, visited);
+    } else if (strcmp(option, "-i") == 0 || strcmp(option, "--idfs") == 0) {
+        result = dfsI(fifteen, visited);
+    }
+
+    return result;
 }
 
 bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
