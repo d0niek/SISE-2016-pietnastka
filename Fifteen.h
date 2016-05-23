@@ -156,7 +156,7 @@ struct Fifteen
         return this->stan < f.stan;
     }
 
-    __uint64_t operator[](int c) const
+    const __uint64_t operator[](int c) const
     {
         return (this->stan >> (4 * (15 - c))) & 15;
     }
