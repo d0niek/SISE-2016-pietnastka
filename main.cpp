@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PB(x) push_back(x)
-#define _SIZE_ 3
+#define _SIZE_ 4
 
 struct Fifteen;
 
@@ -154,7 +154,8 @@ ostream &operator<<(ostream &os, const Fifteen &f)
 }
 
 bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
-bool dfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
+bool dfsR(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
+bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 
 int main()
 {
@@ -175,7 +176,8 @@ int main()
     visited[f.stan] = fifteen;
 
 //    if (!bfs(f, visited)) {
-    if (!dfs(f, visited)) {
+//    if (!dfsR(f, visited)) {
+    if (!dfsI(f, visited)) {
         cout << "Fail\n";
         return 0;
     }
@@ -223,7 +225,7 @@ bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
     return false;
 }
 
-bool dfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
+bool dfsR(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
 {
     if (fifteen == Fifteen()) {
         return true;
@@ -235,8 +237,36 @@ bool dfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
         if (visited.find(it->stan) == visited.end()) {
             visited[it->stan] = fifteen;
 
-            if (dfs(*it, visited)) {
+            if (dfsR(*it, visited)) {
                 return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
+{
+    vector<Fifteen> q;
+
+    q.PB(fifteen);
+
+    while (!q.empty()) {
+        fifteen= q.back();
+        q.pop_back();
+
+        vector<Fifteen> stans = fifteen.getPossibleStates();
+
+        for (vector<Fifteen>::iterator it = stans.begin(); it != stans.end(); it++) {
+            if (visited.find(it->stan) == visited.end()) {
+                visited[it->stan] = fifteen;
+
+                if (*it == Fifteen()) {
+                    return true;
+                }
+
+                q.PB(*it);
             }
         }
     }
