@@ -13,6 +13,7 @@ struct Fifteen
 {
     __uint64_t stan;
     int emptyCell;
+    char direction[4];
 
     Fifteen()
     {
@@ -26,21 +27,45 @@ struct Fifteen
         this->stan = 0x1230000000000000;
         this->emptyCell = 3;
 #endif
+        this->direction[0] = 'l';
+        this->direction[1] = 'u';
+        this->direction[2] = 'r';
+        this->direction[3] = 'd';
+    }
+
+    Fifteen(char* direction)
+    {
+#if _SIZE_ == 4
+        this->stan = 0x123456789abcdef0;
+        this->emptyCell = 15;
+#elif _SIZE_ == 3
+        this->stan = 0x1234567800000000;
+        this->emptyCell = 8;
+#elif _SIZE_ == 2
+        this->stan = 0x1230000000000000;
+        this->emptyCell = 3;
+#endif
+
+        for (int i = 0; i < 4; i++) {
+            this->direction[i] = direction[i];
+        }
     }
 
     Fifteen(const Fifteen &f)
     {
         this->stan = f.stan;
         this->emptyCell = f.emptyCell;
+        for (int i = 0; i < 4; i++) {
+            this->direction[i] = f.direction[i];
+        }
     }
 
     vector<Fifteen> getPossibleStates()
     {
         vector<Fifteen> stans;
-        char direction[] = {'l', 'u', 'r', 'd'};
 
         for (int i = 0; i < 4; i++) {
-            Fifteen f = this->slide(direction[i]);
+            Fifteen f = this->slide(this->direction[i]);
 
             if (f != *this) {
                 stans.PB(f);
@@ -109,6 +134,9 @@ struct Fifteen
     {
         this->stan = f.stan;
         this->emptyCell = f.emptyCell;
+        for (int i = 0; i < 4; i++) {
+            this->direction[i] = f.direction[i];
+        }
 
         return *this;
     }

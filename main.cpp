@@ -34,14 +34,14 @@ bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2) {
+    if (argc < 3) {
         cout << "Brakuje parametrów\n";
         return 0;
     }
 
     srand(time(NULL));
 
-    Fifteen fifteen;
+    Fifteen fifteen(argv[2]);
     Fifteen f = fifteen;
 
     vector<Fifteen> stans;
