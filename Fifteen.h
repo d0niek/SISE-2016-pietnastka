@@ -11,40 +11,31 @@ using namespace std;
 
 struct Fifteen
 {
+    int r, c;
     __uint64_t stan;
     int emptyCell;
     char direction[4];
 
-    Fifteen()
+    Fifteen() : Fifteen(4, 4)
     {
-#if _SIZE_ == 4
-        this->stan = 0x123456789abcdef0;
-        this->emptyCell = 15;
-#elif _SIZE_ == 3
-        this->stan = 0x1234567800000000;
-        this->emptyCell = 8;
-#elif _SIZE_ == 2
-        this->stan = 0x1230000000000000;
-        this->emptyCell = 3;
-#endif
-        this->direction[0] = 'l';
-        this->direction[1] = 'u';
-        this->direction[2] = 'r';
-        this->direction[3] = 'd';
     }
 
-    Fifteen(char* direction)
+    Fifteen(int r, int c) : Fifteen(r, c, "lurd")
     {
-#if _SIZE_ == 4
-        this->stan = 0x123456789abcdef0;
-        this->emptyCell = 15;
-#elif _SIZE_ == 3
-        this->stan = 0x1234567800000000;
-        this->emptyCell = 8;
-#elif _SIZE_ == 2
-        this->stan = 0x1230000000000000;
-        this->emptyCell = 3;
-#endif
+    }
+
+    Fifteen(int r, int c, const char *direction)
+    {
+        this->r = r;
+        this->c = c;
+        this->stan = 0;
+        this->emptyCell = r * c - 1;
+
+        for (int i = 0; i < this->emptyCell; i++) {
+            this->set(i, (__uint64_t)(i + 1));
+        }
+
+        this->set(this->emptyCell, 0);
 
         for (int i = 0; i < 4; i++) {
             this->direction[i] = direction[i];
@@ -53,11 +44,19 @@ struct Fifteen
 
     Fifteen(const Fifteen &f)
     {
+        this->r = f.r;
+        this->c = f.c;
         this->stan = f.stan;
         this->emptyCell = f.emptyCell;
+
         for (int i = 0; i < 4; i++) {
             this->direction[i] = f.direction[i];
         }
+    }
+
+    void set(int index, __uint64_t value)
+    {
+        this->stan |= value << (4 * (15 - index));
     }
 
     vector<Fifteen> getPossibleStates()
@@ -81,30 +80,30 @@ struct Fifteen
 
         switch (direction) {
             case 'l': {
-                if (f.emptyCell % _SIZE_ != 0) {
+                if (f.emptyCell % this->c != 0) {
                     f.swapCell(f.emptyCell, f.emptyCell - 1);
                     f.emptyCell -= 1;
                 }
             } break;
 
             case 'u': {
-                if (f.emptyCell / _SIZE_ != 0) {
-                    f.swapCell(f.emptyCell, f.emptyCell - _SIZE_);
-                    f.emptyCell -= _SIZE_;
+                if (f.emptyCell / this->r != 0) {
+                    f.swapCell(f.emptyCell, f.emptyCell - this->c);
+                    f.emptyCell -= this->c;
                 }
             } break;
 
             case 'r': {
-                if (f.emptyCell % _SIZE_ != (_SIZE_ - 1)) {
+                if (f.emptyCell % this->c != (this->c - 1)) {
                     f.swapCell(f.emptyCell, f.emptyCell + 1);
                     f.emptyCell += 1;
                 }
             } break;
 
             case 'd': {
-                if (f.emptyCell / _SIZE_ != (_SIZE_ - 1)) {
-                    f.swapCell(f.emptyCell, f.emptyCell + _SIZE_);
-                    f.emptyCell += _SIZE_;
+                if (f.emptyCell / this->r != (this->r - 1)) {
+                    f.swapCell(f.emptyCell, f.emptyCell + this->c);
+                    f.emptyCell += this->c;
                 }
             } break;
 
@@ -132,8 +131,11 @@ struct Fifteen
 
     Fifteen &operator=(const Fifteen &f)
     {
+        this->r = f.r;
+        this->c = f.c;
         this->stan = f.stan;
         this->emptyCell = f.emptyCell;
+
         for (int i = 0; i < 4; i++) {
             this->direction[i] = f.direction[i];
         }

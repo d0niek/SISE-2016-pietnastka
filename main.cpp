@@ -8,18 +8,19 @@
 using namespace std;
 
 #define PB(x) push_back(x)
-#define _SIZE_ 3
+#define _SIZE_ROWS_ 4
+#define _SIZE_COLS_ 2
 
 #include "Fifteen.h"
 
 ostream &operator<<(ostream &os, const Fifteen &f)
 {
-    int fifteenSize = _SIZE_ * _SIZE_;
+    int fifteenSize = _SIZE_ROWS_ * _SIZE_COLS_;
 
     for (int i = 0; i < fifteenSize; i++) {
         os << f[i] << "\t";
 
-        if (i % _SIZE_ == (_SIZE_ - 1)) {
+        if (i % _SIZE_COLS_ == (_SIZE_COLS_ - 1)) {
             os << "\n";
         }
     }
@@ -41,7 +42,7 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
 
-    Fifteen fifteen(argv[2]);
+    Fifteen fifteen(_SIZE_ROWS_, _SIZE_COLS_, argv[2]);
     Fifteen f = fifteen;
 
     vector<Fifteen> stans;
@@ -52,6 +53,14 @@ int main(int argc, char* argv[])
         f = stans[rand() % stans.size()];
     }
 
+//    cout << fifteen << "\n---\n";
+//
+//    for (vector<Fifteen>::iterator it = stans.begin(); it != stans.end(); it++) {
+//        cout << *it << "\n";
+//    }
+//
+//    return 0;
+
     map<__uint64_t, Fifteen> visited;
     visited[f.stan] = fifteen;
 
@@ -60,9 +69,9 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    cout << Fifteen() << "\n";
+    cout << Fifteen(_SIZE_ROWS_, _SIZE_COLS_) << "\n";
 
-    fifteen = visited[Fifteen().stan];
+    fifteen = visited[Fifteen(_SIZE_ROWS_, _SIZE_COLS_).stan];
 
     while (fifteen != f) {
         cout << fifteen << "\n";
@@ -106,7 +115,7 @@ bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
             if (visited.find(it->stan) == visited.end()) {
                 visited[it->stan] = fifteen;
 
-                if (*it == Fifteen()) {
+                if (*it == Fifteen(_SIZE_ROWS_, _SIZE_COLS_)) {
                     return true;
                 }
 
@@ -120,7 +129,7 @@ bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
 
 bool dfsR(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
 {
-    if (fifteen == Fifteen()) {
+    if (fifteen == Fifteen(_SIZE_ROWS_, _SIZE_COLS_)) {
         return true;
     }
 
@@ -155,7 +164,7 @@ bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
             if (visited.find(it->stan) == visited.end()) {
                 visited[it->stan] = fifteen;
 
-                if (*it == Fifteen()) {
+                if (*it == Fifteen(_SIZE_ROWS_, _SIZE_COLS_)) {
                     return true;
                 }
 
