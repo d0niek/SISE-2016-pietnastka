@@ -76,6 +76,23 @@ struct Fifteen
         return stans;
     }
 
+    char different(Fifteen f)
+    {
+        char direction = '?';
+
+        if (this->emptyCell - 1 == f.emptyCell) {
+            direction = 'l';
+        } else if (this->emptyCell - this->r == f.emptyCell) {
+            direction = 'u';
+        } else if (this->emptyCell + 1 == f.emptyCell) {
+            direction = 'r';
+        } else if (this->emptyCell + this->r == f.emptyCell) {
+            direction = 'd';
+        }
+
+        return direction;
+    }
+
     Fifteen slide(char direction)
     {
         Fifteen f = *this;

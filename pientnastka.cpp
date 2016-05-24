@@ -43,7 +43,6 @@ int main(int argc, char *argv[])
     cin >> w >> k;
 
     Fifteen fifteen(w, k, argv[2]);
-
     fifteen.reset();
 
     for (int i = 0; i < w * k; i++) {
@@ -56,9 +55,25 @@ int main(int argc, char *argv[])
     visited[fifteen.stan] = fifteen;
 
     if (solve(fifteen, visited, argv[1])) {
-        Fifteen solution = Fifteen(w, k);
+        Fifteen s = Fifteen(w, k);
+        Fifteen f;
+        vector<char> solution;
 
-        fifteen = visited[solution.stan];
+        do {
+            f = visited[s.stan];
+
+            solution.PB(f.different(s));
+
+            s = f;
+        } while (f != fifteen);
+
+        reverse(solution.begin(), solution.end());
+
+        cout << solution.size() << "\n";
+
+        for (unsigned int i = 0; i < solution.size(); i++) {
+            cout << solution[i];
+        }
 
         return 0;
     }
