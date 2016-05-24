@@ -82,11 +82,11 @@ struct Fifteen
 
         if (this->emptyCell - 1 == f.emptyCell) {
             direction = 'l';
-        } else if (this->emptyCell - this->r == f.emptyCell) {
+        } else if (this->emptyCell - this->c == f.emptyCell) {
             direction = 'u';
         } else if (this->emptyCell + 1 == f.emptyCell) {
             direction = 'r';
-        } else if (this->emptyCell + this->r == f.emptyCell) {
+        } else if (this->emptyCell + this->c == f.emptyCell) {
             direction = 'd';
         }
 
