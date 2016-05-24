@@ -53,14 +53,6 @@ int main(int argc, char* argv[])
         f = stans[rand() % stans.size()];
     }
 
-//    cout << fifteen << "\n---\n";
-//
-//    for (vector<Fifteen>::iterator it = stans.begin(); it != stans.end(); it++) {
-//        cout << *it << "\n";
-//    }
-//
-//    return 0;
-
     map<__uint64_t, Fifteen> visited;
     visited[f.stan] = fifteen;
 
