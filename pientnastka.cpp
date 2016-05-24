@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <ctime>
 #include <queue>
 #include <map>
 #include <cstring>
@@ -29,7 +28,7 @@ ostream &operator<<(ostream &os, const Fifteen &f)
     return os;
 }
 
-bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char *option);
+bool solve(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char *option);
 bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 bool dfsR(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
@@ -56,19 +55,19 @@ int main(int argc, char *argv[])
     map<__uint64_t, Fifteen> visited;
     visited[fifteen.stan] = fifteen;
 
-    if (!resolv(fifteen, visited, argv[1])) {
-        cout << -1;
+    if (solve(fifteen, visited, argv[1])) {
+        Fifteen solution = Fifteen(w, k);
+
+        fifteen = visited[solution.stan];
+
         return 0;
     }
 
-    Fifteen solution = Fifteen(w, k);
-
-    fifteen = visited[solution.stan];
-
+    cout << -1;
     return 0;
 }
 
-bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char *option)
+bool solve(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char *option)
 {
     bool result = false;
 
