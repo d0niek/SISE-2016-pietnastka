@@ -5,22 +5,23 @@
 #include <queue>
 #include <map>
 #include <cstring>
+
 using namespace std;
 
 #define PB(x) push_back(x)
-#define _SIZE_ROWS_ 4
-#define _SIZE_COLS_ 2
+
+int w, k;
 
 #include "Fifteen.h"
 
 ostream &operator<<(ostream &os, const Fifteen &f)
 {
-    int fifteenSize = _SIZE_ROWS_ * _SIZE_COLS_;
+    int fifteenSize = w * k;
 
     for (int i = 0; i < fifteenSize; i++) {
         os << f[i] << "\t";
 
-        if (i % _SIZE_COLS_ == (_SIZE_COLS_ - 1)) {
+        if (i % k == (k - 1)) {
             os << "\n";
         }
     }
@@ -28,55 +29,46 @@ ostream &operator<<(ostream &os, const Fifteen &f)
     return os;
 }
 
-bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char* option);
+bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char *option);
 bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 bool dfsR(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited);
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     if (argc < 3) {
         cout << "Brakuje parametrów\n";
         return 0;
     }
 
-    srand(time(NULL));
+    cin >> w >> k;
 
-    Fifteen fifteen(_SIZE_ROWS_, _SIZE_COLS_, argv[2]);
-    Fifteen f = fifteen;
+    Fifteen fifteen(w, k, argv[2]);
 
-    vector<Fifteen> stans;
-    for (int i = 0; i < 5; i++) {
-        stans = f.getPossibleStates();
+    fifteen.reset();
 
-        fifteen = f;
-        f = stans[rand() % stans.size()];
+    for (int i = 0; i < w * k; i++) {
+        __uint64_t v;
+        cin >> v;
+        fifteen.set(i, v);
     }
 
     map<__uint64_t, Fifteen> visited;
-    visited[f.stan] = fifteen;
+    visited[fifteen.stan] = fifteen;
 
-    if (!resolv(f, visited, argv[1])) {
-        cout << "Fail\n";
+    if (!resolv(fifteen, visited, argv[1])) {
+        cout << -1;
         return 0;
     }
 
-    cout << Fifteen(_SIZE_ROWS_, _SIZE_COLS_) << "\n";
+    Fifteen solution = Fifteen(w, k);
 
-    fifteen = visited[Fifteen(_SIZE_ROWS_, _SIZE_COLS_).stan];
-
-    while (fifteen != f) {
-        cout << fifteen << "\n";
-
-        fifteen = visited[fifteen.stan];
-    }
-
-    cout << f << "\n";
+    fifteen = visited[solution.stan];
 
     return 0;
 }
 
-bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char* option)
+bool resolv(Fifteen fifteen, map<__uint64_t, Fifteen> &visited, char *option)
 {
     bool result = false;
 
@@ -98,7 +90,7 @@ bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
     q.push(fifteen);
 
     while (!q.empty()) {
-        fifteen= q.front();
+        fifteen = q.front();
         q.pop();
 
         vector<Fifteen> stans = fifteen.getPossibleStates();
@@ -107,7 +99,7 @@ bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
             if (visited.find(it->stan) == visited.end()) {
                 visited[it->stan] = fifteen;
 
-                if (*it == Fifteen(_SIZE_ROWS_, _SIZE_COLS_)) {
+                if (*it == Fifteen(w, k)) {
                     return true;
                 }
 
@@ -121,7 +113,7 @@ bool bfs(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
 
 bool dfsR(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
 {
-    if (fifteen == Fifteen(_SIZE_ROWS_, _SIZE_COLS_)) {
+    if (fifteen == Fifteen(w, k)) {
         return true;
     }
 
@@ -147,7 +139,7 @@ bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
     q.PB(fifteen);
 
     while (!q.empty()) {
-        fifteen= q.back();
+        fifteen = q.back();
         q.pop_back();
 
         vector<Fifteen> stans = fifteen.getPossibleStates();
@@ -156,7 +148,7 @@ bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
             if (visited.find(it->stan) == visited.end()) {
                 visited[it->stan] = fifteen;
 
-                if (*it == Fifteen(_SIZE_ROWS_, _SIZE_COLS_)) {
+                if (*it == Fifteen(w, k)) {
                     return true;
                 }
 

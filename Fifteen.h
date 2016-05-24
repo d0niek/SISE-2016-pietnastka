@@ -2,12 +2,12 @@
 // Created by d0niek on 23.05.16.
 //
 
+#ifndef PIENTNASTKA_FIFTEEN_H
+#define PIENTNASTKA_FIFTEEN_H
+
 #include <iostream>
 #include <vector>
 using namespace std;
-
-#ifndef PIENTNASTKA_FIFTEEN_H
-#define PIENTNASTKA_FIFTEEN_H
 
 struct Fifteen
 {
@@ -16,7 +16,7 @@ struct Fifteen
     int emptyCell;
     char direction[4];
 
-    Fifteen() : Fifteen(4, 4)
+    Fifteen() : Fifteen(w, k)
     {
     }
 
@@ -34,8 +34,6 @@ struct Fifteen
         for (int i = 0; i < this->emptyCell; i++) {
             this->set(i, (__uint64_t)(i + 1));
         }
-
-        this->set(this->emptyCell, 0);
 
         for (int i = 0; i < 4; i++) {
             this->direction[i] = direction[i];
@@ -57,6 +55,10 @@ struct Fifteen
     void set(int index, __uint64_t value)
     {
         this->stan |= value << (4 * (15 - index));
+
+        if (value == 0) {
+            this->emptyCell = index;
+        }
     }
 
     vector<Fifteen> getPossibleStates()
@@ -112,6 +114,12 @@ struct Fifteen
         }
 
         return f;
+    }
+
+    void reset()
+    {
+        this->stan = 0;
+        this->emptyCell = -1;
     }
 
     void swapCell(int x, int y)
