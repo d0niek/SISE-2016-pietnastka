@@ -1,5 +1,3 @@
-// wxWidgets "Hello world" Program
-// For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
 
 #ifndef WX_PRECOMP
@@ -10,6 +8,11 @@
 #include <wx/file.h>
 #include <wx/dcclient.h>
 #include <wx/string.h>
+#include <wx/button.h>
+
+#include <iostream>
+
+using namespace std;
 
 #endif
 
@@ -24,16 +27,30 @@ class MyFrame : public wxFrame
 public:
     MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
 
+    ~MyFrame();
+
+    void Init();
+
 private:
+    wxClientDC *dc = nullptr;
+
+    wxButton *(fifteenElements[16]);
+
     void AddMenu();
 
     void OpenFile(wxCommandEvent &event);
 
     void ReadFileContent(wxFile *file);
 
+    void DrawFifteen(int x, int y, wxString fifteen);
+
+    void EraseFifteen();
+
     void OnExit(wxCommandEvent &event);
 
     void OnAbout(wxCommandEvent &event);
+
+    void DrawTextString(const wxString &text, const wxPoint &pt);
 
 wxDECLARE_EVENT_TABLE();
 };
@@ -57,16 +74,35 @@ bool MyApp::OnInit()
 {
     MyFrame *frame = new MyFrame("Hello World", wxPoint(50, 50), wxSize(450, 340));
     frame->Show(true);
+
+    frame->Init();
+
     return true;
 }
 
 MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
         : wxFrame(NULL, wxID_ANY, title, pos, size)
 {
+    for (int i = 0; i < 16; i++) {
+        this->fifteenElements[i] = nullptr;
+    }
+
     this->AddMenu();
 
     CreateStatusBar();
     SetStatusText("Welcome to wxWidgets!");
+}
+
+MyFrame::~MyFrame()
+{
+    if (this->dc) {
+        delete this->dc;
+    }
+}
+
+void MyFrame::Init()
+{
+    this->dc = new wxClientDC(this);
 }
 
 void MyFrame::AddMenu()
@@ -112,6 +148,51 @@ void MyFrame::ReadFileContent(wxFile *file)
     wxString fileContent;
 
     file->ReadAll(&fileContent);
+
+    int x = wxAtoi(fileContent[0]);
+    int y = wxAtoi(fileContent[2]);
+
+    wxString fifteen = fileContent.substr(4);
+    fifteen.Replace("\n", " ");
+
+    this->DrawFifteen(x, y, fifteen);
+}
+
+void MyFrame::DrawFifteen(int x, int y, wxString fifteen)
+{
+    this->EraseFifteen();
+
+    int startPos = 0;
+    int endPos;
+
+    for (int i = 0; i < x * y; i++) {
+        endPos = fifteen.find(' ', startPos);
+
+        wxString fieldValue = fifteen.substr(startPos, endPos - startPos);
+
+        if (fieldValue.compare("0") != 0) {
+            wxButton *element = new wxButton(
+                    this,
+                    wxID_ANY,
+                    fieldValue,
+                    wxPoint(30 * (i % y), 30 * (i / y)),
+                    wxSize(30, 30)
+            );
+
+            this->fifteenElements[i] = element;
+        }
+
+        startPos = endPos + 1;
+    }
+}
+
+void MyFrame::EraseFifteen()
+{
+    for (int i = 0; i < 16; i++) {
+        delete this->fifteenElements[i];
+
+        this->fifteenElements[i] = nullptr;
+    }
 }
 
 void MyFrame::OnExit(wxCommandEvent &event)
@@ -126,4 +207,14 @@ void MyFrame::OnAbout(wxCommandEvent &event)
             "About",
             wxOK | wxICON_INFORMATION
     );
+}
+
+void MyFrame::DrawTextString(const wxString &text, const wxPoint &pt)
+{
+    wxFont font(12, wxFONTFAMILY_SWISS, wxNORMAL, wxBOLD);
+    this->dc->SetFont(font);
+    this->dc->SetBackgroundMode(wxTRANSPARENT);
+    this->dc->SetTextForeground(*wxBLACK);
+    this->dc->SetTextBackground(*wxWHITE);
+    this->dc->DrawText(text, pt);
 }
