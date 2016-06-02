@@ -35,7 +35,13 @@ public:
 private:
     wxClientDC *dc = nullptr;
 
+    wxString openedFile;
+
+    wxSize fifteenSize;
+
     wxButton *(fifteenElements[16]);
+
+    int emptyElementPos;
 
     wxRadioBox *solutions = nullptr;
 
@@ -47,7 +53,7 @@ private:
 
     void ReadFileContent(wxFile *file);
 
-    void DrawFifteen(int x, int y, wxString fifteen);
+    void DrawFifteen(wxString fifteen);
 
     void EraseFifteen();
 
@@ -58,6 +64,10 @@ private:
     void OnAbout(wxCommandEvent &event);
 
     void OnSolve(wxCommandEvent &event);
+
+    void Solve(wxFile *file);
+
+    void SlideElement(wxUniChar direction);
 
     void DrawTextString(const wxString &text, const wxPoint &pt);
 
@@ -125,7 +135,7 @@ void MyFrame::AddMenu()
     menuFile->Append(wxID_EXIT);
 
     wxMenu *menuHelp = new wxMenu;
-    menuHelp->Append(wxID_ABOUT);
+    menuHelp->Append(wxID_ABOUT, "Help\tF1");
 
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
@@ -147,6 +157,9 @@ void MyFrame::OpenFile(wxCommandEvent &event)
     if (fileDialog.ShowModal() == wxID_OK) {
         wxFileInputStream inputStream(fileDialog.GetPath());
 
+        this->openedFile = fileDialog.GetFilename();
+        this->openedFile.Replace(".in", "");
+
         if (inputStream.IsOk()) {
             this->ReadFileContent(inputStream.GetFile());
         } else {
@@ -158,27 +171,28 @@ void MyFrame::OpenFile(wxCommandEvent &event)
 void MyFrame::ReadFileContent(wxFile *file)
 {
     wxString fileContent;
-
     file->ReadAll(&fileContent);
 
     int x = wxAtoi(fileContent[0]);
     int y = wxAtoi(fileContent[2]);
 
+    this->fifteenSize.Set(x, y);
+
     wxString fifteen = fileContent.substr(4);
     fifteen.Replace("\n", " ");
 
-    this->DrawFifteen(x, y, fifteen);
+    this->DrawFifteen(fifteen);
     this->DrawSolutionsOptions();
 }
 
-void MyFrame::DrawFifteen(int x, int y, wxString fifteen)
+void MyFrame::DrawFifteen(wxString fifteen)
 {
     this->EraseFifteen();
 
     int startPos = 0;
     int endPos;
 
-    for (int i = 0; i < x * y; i++) {
+    for (int i = 0; i < this->fifteenSize.GetX() * this->fifteenSize.GetY(); i++) {
         endPos = fifteen.find(' ', startPos);
 
         wxString fieldValue = fifteen.substr(startPos, endPos - startPos);
@@ -188,11 +202,13 @@ void MyFrame::DrawFifteen(int x, int y, wxString fifteen)
                     this,
                     wxID_ANY,
                     fieldValue,
-                    wxPoint(30 * (i % y), 30 * (i / y)),
+                    wxPoint(30 * (i % this->fifteenSize.GetY()), 30 * (i / this->fifteenSize.GetY())),
                     wxSize(30, 30)
             );
 
             this->fifteenElements[i] = element;
+        } else{
+            this->emptyElementPos = i;
         }
 
         startPos = endPos + 1;
@@ -203,7 +219,6 @@ void MyFrame::EraseFifteen()
 {
     for (int i = 0; i < 16; i++) {
         delete this->fifteenElements[i];
-
         this->fifteenElements[i] = nullptr;
     }
 }
@@ -248,7 +263,60 @@ void MyFrame::OnAbout(wxCommandEvent &event)
 
 void MyFrame::OnSolve(wxCommandEvent &event)
 {
-    cout << this->solutions->GetStringSelection() << "\n";
+    wxString option = this->solutions->GetStringSelection();
+    wxString solutionFile("../out/");
+
+    solutionFile << this->openedFile << "_" << option.Lower() << ".out";
+
+    wxFileInputStream inputStream(solutionFile);
+
+    if (inputStream.IsOk()) {
+        this->Solve(inputStream.GetFile());
+    } else {
+        wxLogError("Cannot open file '%s'.", solutionFile);
+    }
+}
+
+void MyFrame::Solve(wxFile *file)
+{
+    wxString fileContent;
+    file->ReadAll(&fileContent);
+
+    // Skip solution size
+    int endlPos = fileContent.find("\n");
+    wxString solution = fileContent.substr(endlPos + 1);
+
+    for (int i = 0; i < solution.length(); i++) {
+        this->SlideElement(solution[i]);
+    }
+}
+
+void MyFrame::SlideElement(wxUniChar direction)
+{
+    int element;
+    int x = 0, y = 0;
+
+    if (direction == 'l') {
+        element = this->emptyElementPos - 1;
+        x = 30;
+    } else if (direction == 'u') {
+        element = this->emptyElementPos - this->fifteenSize.GetY();
+        y = 30;
+    } else if (direction == 'r') {
+        element = this->emptyElementPos + 1;
+        x = -30;
+    } else if (direction == 'd') {
+        element = this->emptyElementPos + this->fifteenSize.GetY();
+        y = -30;
+    }
+
+    wxPoint elementPos = this->fifteenElements[element]->GetPosition();
+    this->fifteenElements[element]->Move(elementPos.x + x, elementPos.y + y);
+
+    this->fifteenElements[this->emptyElementPos] = this->fifteenElements[element];
+    this->fifteenElements[element] = nullptr;
+
+    this->emptyElementPos = element;
 }
 
 void MyFrame::DrawTextString(const wxString &text, const wxPoint &pt)
