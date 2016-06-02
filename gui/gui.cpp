@@ -9,6 +9,7 @@
 #include <wx/dcclient.h>
 #include <wx/string.h>
 #include <wx/button.h>
+#include <wx/radiobox.h>
 
 #include <iostream>
 
@@ -36,6 +37,10 @@ private:
 
     wxButton *(fifteenElements[16]);
 
+    wxRadioBox *solutions = nullptr;
+
+    wxButton *solveBtn = nullptr;
+
     void AddMenu();
 
     void OpenFile(wxCommandEvent &event);
@@ -46,9 +51,13 @@ private:
 
     void EraseFifteen();
 
+    void DrawSolutionsOptions();
+
     void OnExit(wxCommandEvent &event);
 
     void OnAbout(wxCommandEvent &event);
+
+    void OnSolve(wxCommandEvent &event);
 
     void DrawTextString(const wxString &text, const wxPoint &pt);
 
@@ -57,7 +66,9 @@ wxDECLARE_EVENT_TABLE();
 
 enum
 {
-    ID_Load_file = 1
+    ID_Load_file = 1,
+    ID_RADIOBOX = 2,
+    ID_SOLVE = 3,
 };
 
 wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
@@ -65,6 +76,7 @@ wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
                 EVT_MENU(ID_Load_file, MyFrame::OpenFile)
                 EVT_MENU(wxID_EXIT, MyFrame::OnExit)
                 EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
+                EVT_BUTTON(ID_SOLVE, MyFrame::OnSolve)
 
 wxEND_EVENT_TABLE()
 
@@ -95,9 +107,9 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 
 MyFrame::~MyFrame()
 {
-    if (this->dc) {
-        delete this->dc;
-    }
+    delete this->dc;
+    delete this->solutions;
+    delete this->solveBtn;
 }
 
 void MyFrame::Init()
@@ -156,6 +168,7 @@ void MyFrame::ReadFileContent(wxFile *file)
     fifteen.Replace("\n", " ");
 
     this->DrawFifteen(x, y, fifteen);
+    this->DrawSolutionsOptions();
 }
 
 void MyFrame::DrawFifteen(int x, int y, wxString fifteen)
@@ -195,6 +208,30 @@ void MyFrame::EraseFifteen()
     }
 }
 
+void MyFrame::DrawSolutionsOptions()
+{
+    wxArrayString strings;
+    strings.Add(wxT("BFS"));
+    strings.Add(wxT("DFS"));
+    strings.Add(wxT("iDFS"));
+
+    this->solutions = new wxRadioBox(
+            this,
+            ID_RADIOBOX,
+            wxT("Solutions options"),
+            wxPoint(0, 30 * 5),
+            wxDefaultSize,
+            strings
+    );
+
+    this->solveBtn = new wxButton(
+            this,
+            ID_SOLVE,
+            "Solve",
+            wxPoint(0, this->solutions->GetPosition().y + this->solutions->GetSize().GetHeight() + 5)
+    );
+}
+
 void MyFrame::OnExit(wxCommandEvent &event)
 {
     Close(true);
@@ -207,6 +244,11 @@ void MyFrame::OnAbout(wxCommandEvent &event)
             "About",
             wxOK | wxICON_INFORMATION
     );
+}
+
+void MyFrame::OnSolve(wxCommandEvent &event)
+{
+    cout << this->solutions->GetStringSelection() << "\n";
 }
 
 void MyFrame::DrawTextString(const wxString &text, const wxPoint &pt)
