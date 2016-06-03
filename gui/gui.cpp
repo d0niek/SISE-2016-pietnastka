@@ -10,13 +10,27 @@
 #include <wx/string.h>
 #include <wx/button.h>
 #include <wx/radiobox.h>
-#include "wx/sizer.h"
+#include <wx/sizer.h>
+#include <wx/timer.h>
 
 #include <iostream>
 
 using namespace std;
 
 #endif
+
+class BasicDrawPanel;
+
+class RenderTimer : public wxTimer
+{
+    BasicDrawPanel *drawPanel;
+public:
+    RenderTimer(BasicDrawPanel *drawPanel);
+
+    void Notify();
+
+    void start();
+};
 
 class BasicDrawPanel : public wxPanel
 {
@@ -42,8 +56,6 @@ public:
 
     void render(wxDC &dc);
 
-    void Solve(const wxString &solution);
-
     void SetFifteen(wxString fifteenElements[], int emptyElement, const wxSize &fifteenSize);
 
     void SetSolution(const wxString &solution);
@@ -55,19 +67,12 @@ class MyFrame;
 
 class MyApp : public wxApp
 {
-    BasicDrawPanel *drawPanel;
-    bool render_loop_on;
-
     bool OnInit();
-
-    void onIdle(wxIdleEvent &evt);
-
-public:
-    void activateRenderLoop(bool on);
 };
 
 class MyFrame : public wxFrame
 {
+    RenderTimer *timer;
     BasicDrawPanel *drawPanel;
     wxString openedFile;
     wxRadioBox *solutions = nullptr;
@@ -97,8 +102,6 @@ public:
 
     ~MyFrame();
 
-    void SetDrawPanel(BasicDrawPanel *drawPanel);
-
 wxDECLARE_EVENT_TABLE();
 };
 
@@ -120,41 +123,29 @@ wxEND_EVENT_TABLE()
 
 wxIMPLEMENT_APP(MyApp);
 
+RenderTimer::RenderTimer(BasicDrawPanel *drawPanel) :
+        wxTimer()
+{
+    this->drawPanel = drawPanel;
+}
+
+void RenderTimer::Notify()
+{
+    this->drawPanel->Refresh();
+}
+
+void RenderTimer::start()
+{
+    wxTimer::Start(10);
+}
+
 bool MyApp::OnInit()
 {
-    render_loop_on = false;
-
     MyFrame *frame = new MyFrame("Hello World", wxPoint(50, 50), wxSize(450, 340));
-    drawPanel = new BasicDrawPanel(frame);
 
-    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(drawPanel);
-
-    frame->SetSizer(sizer);
-    frame->SetDrawPanel(drawPanel);
     frame->Show();
 
-    activateRenderLoop(true);
     return true;
-}
-
-void MyApp::activateRenderLoop(bool on)
-{
-    if (on && !render_loop_on) {
-        Connect(wxID_ANY, wxEVT_IDLE, wxIdleEventHandler(MyApp::onIdle));
-        render_loop_on = true;
-    } else if (!on && render_loop_on) {
-        Disconnect(wxEVT_IDLE, wxIdleEventHandler(MyApp::onIdle));
-        render_loop_on = false;
-    }
-}
-
-void MyApp::onIdle(wxIdleEvent &evt)
-{
-    if (render_loop_on) {
-        drawPanel->paintNow();
-        evt.RequestMore();
-    }
 }
 
 BEGIN_EVENT_TABLE(BasicDrawPanel, wxPanel)
@@ -187,7 +178,15 @@ void BasicDrawPanel::render(wxDC &dc)
     dc.Clear();
 
     if (!this->solution.empty()) {
+        this->SlideElement(this->solution[0]);
 
+        if (this->solution.length() > 1) {
+            this->solution = this->solution.substr(1);
+        } else {
+            this->solution.clear();
+        }
+
+        wxMilliSleep(300);
     }
 
     if (this->emptyElement >= 0) {
@@ -227,37 +226,23 @@ void BasicDrawPanel::FillGrid(wxDC &dc)
     }
 }
 
-void BasicDrawPanel::Solve(const wxString &solution)
-{
-    // Skip solution size
-    int endlPos = solution.find("\n");
-    wxString solutionPath = solution.substr(endlPos + 1);
-
-    for (int i = 0; i < solutionPath.length(); i++) {
-        cout << i << "<-\n";
-        this->SlideElement(solutionPath[i]);
-
-        wxMilliSleep(300);
-    }
-}
-
 void BasicDrawPanel::SlideElement(wxUniChar direction)
 {
-//    int element;
-//
-//    if (direction == 'l') {
-//        element = this->emptyElementPos - 1;
-//    } else if (direction == 'u') {
-//        element = this->emptyElementPos - this->fifteenSize.GetY();
-//    } else if (direction == 'r') {
-//        element = this->emptyElementPos + 1;
-//    } else if (direction == 'd') {
-//        element = this->emptyElementPos + this->fifteenSize.GetY();
-//    }
-//
-//    this->fifteenElements[this->emptyElementPos] = this->fifteenElements[element];
-//    this->emptyElementPos = element;
-//    this->fifteenElements[this->emptyElementPos] = "0";
+    int element;
+
+    if (direction == 'l') {
+        element = this->emptyElement - 1;
+    } else if (direction == 'u') {
+        element = this->emptyElement - this->fifteenSize.GetY();
+    } else if (direction == 'r') {
+        element = this->emptyElement + 1;
+    } else if (direction == 'd') {
+        element = this->emptyElement + this->fifteenSize.GetY();
+    }
+
+    this->fifteen[this->emptyElement] = this->fifteen[element];
+    this->emptyElement = element;
+    this->fifteen[this->emptyElement] = "0";
 }
 
 void BasicDrawPanel::SetFifteen(wxString fifteen[], int emptyElement, const wxSize &fifteenSize)
@@ -277,6 +262,17 @@ void BasicDrawPanel::SetSolution(const wxString &solution)
 MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
         : wxFrame(NULL, wxID_ANY, title, pos, size)
 {
+    this->drawPanel = new BasicDrawPanel(this);
+
+    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(this->drawPanel);
+
+    this->SetSizer(sizer);
+    this->SetAutoLayout(true);
+
+    this->timer = new RenderTimer(this->drawPanel);
+    this->timer->start();
+
     this->AddMenu();
 
     CreateStatusBar();
@@ -285,6 +281,7 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 
 MyFrame::~MyFrame()
 {
+    delete this->timer;
     delete this->solutions;
     delete this->solveBtn;
 }
@@ -397,7 +394,7 @@ void MyFrame::DrawSolutionsOptions()
 
 void MyFrame::OnExit(wxCommandEvent &event)
 {
-    wxGetApp().activateRenderLoop(false);
+    this->timer->Stop();
     Close(true);
 }
 
@@ -434,13 +431,10 @@ wxString MyFrame::LoadSolution()
         wxString solution;
         file->ReadAll(&solution);
 
-        return solution;
+        int endlPos = solution.find("\n");
+
+        return solution.substr(endlPos + 1);
     } else {
         wxLogError("Cannot open file '%s'.", solutionFile);
     }
-}
-
-void MyFrame::SetDrawPanel(BasicDrawPanel *drawPanel)
-{
-    this->drawPanel = drawPanel;
 }
