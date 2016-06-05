@@ -1,0 +1,30 @@
+$ ./test.sh . pientnastka --bfs rdlu
+1. time 0.00 memo 3176
+2. time 0.00 memo 3096
+3. time 0.00 memo 3136
+4. time 0.00 memo 3096
+5. time 0.00 memo 3172
+6. time 0.00 memo 3252
+7. time 0.00 memo 3188
+8. time 38.00 memo 1596944
+9. time 10.31 memo 523300
+$ ./test.sh . pientnastka --dfs rdlu
+1. time 0.00 memo 3116
+2. time 0.00 memo 3504
+3. time 0.00 memo 3584
+4. time 0.01 memo 5804
+5. time 0.00 memo 3512
+6. time 0.00 memo 4088
+7. time 0.00 memo 3616
+8. time 0.00 memo 3260
+9. time 0.05 memo 21060
+$ ./test.sh . pientnastka --idfs rdlu
+1. time 0.00 memo 3092
+2. time 0.00 memo 3112
+3. time 0.00 memo 3220
+4. time 0.04 memo 6788
+5. time 0.09 memo 11056
+6. time 0.06 memo 11180
+7. time 0.07 memo 11744
+8. time 0.00 memo 3180
+9. time 0.01 memo 4948
