@@ -186,7 +186,7 @@ void BasicDrawPanel::render(wxDC &dc)
             this->solution.clear();
         }
 
-        wxMilliSleep(300);
+        wxMilliSleep(100);
     }
 
     if (this->emptyElement >= 0) {
@@ -428,12 +428,14 @@ wxString MyFrame::LoadSolution()
 
     if (inputStream.IsOk()) {
         wxFile *file = inputStream.GetFile();
-        wxString solution;
-        file->ReadAll(&solution);
+        wxString fileContent;
+        file->ReadAll(&fileContent);
 
-        int endlPos = solution.find("\n");
+        int solutionStart = fileContent.find("\n") + 1;
+        int solutionEnd = fileContent.find("\n", solutionStart);
+        wxString solution = fileContent.substr(solutionStart, solutionEnd - solutionStart);
 
-        return solution.substr(endlPos + 1);
+        return solution;
     } else {
         wxLogError("Cannot open file '%s'.", solutionFile);
     }
