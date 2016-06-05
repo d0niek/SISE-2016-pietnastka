@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
             cout << solution[i];
         }
 
-        cout << "\n" << visited.size();
+        cout << "\nVisited vertex: " << visited.size();
 
         return 0;
     }
