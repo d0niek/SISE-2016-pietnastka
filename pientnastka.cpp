@@ -75,6 +75,8 @@ int main(int argc, char *argv[])
             cout << solution[i];
         }
 
+        cout << "\n" << visited.size();
+
         return 0;
     }
 
