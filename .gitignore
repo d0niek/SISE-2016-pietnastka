@@ -1,6 +1,5 @@
 .idea/
 CMakeLists.txt
 pientnastka
-out/
 gui/gui
 gui/gui.o
