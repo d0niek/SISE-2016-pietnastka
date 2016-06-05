@@ -158,6 +158,8 @@ bool dfsI(Fifteen fifteen, map<__uint64_t, Fifteen> &visited)
 
         vector<Fifteen> stans = fifteen.getPossibleStates();
 
+        reverse(stans.begin(), stans.end());
+
         for (vector<Fifteen>::iterator it = stans.begin(); it != stans.end(); it++) {
             if (visited.find(it->stan) == visited.end()) {
                 visited[it->stan] = fifteen;
